@@ -419,12 +419,12 @@ function openP(id){const p=P.find(x=>x.id===id);if(!p)return;
  <h4>Standards &amp; stack</h4><div class="chips">${p.chips.map(c=>`<span>${esc(c)}</span>`).join('')}</div>
  <div class="plinks">${p.links.map((l,i)=>`<a class="btn ${i?'ghost':'dark'}" href="${l[1]}" target="_blank" rel="noopener">${l[0]} ↗</a>`).join('')}<a class="btn primary" href="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0qS2wavbOqnK7Lyt7UDDXg0zY_ERMan_Z_glUBFV7wZIO_zdM97w-_7BrsAZ9cvQZhGyKMIr8f" target="_blank" rel="noopener">Discuss a similar project ↗</a></div>
  ${p.note?`<p class="note">${p.note}</p>`:''}`;
- document.getElementById('panel').scrollTop=0;body.classList.add('open');history.replaceState(null,'','#cs-'+id);}
-function closeP(){body.classList.remove('open');history.replaceState(null,'',location.pathname);}
+ document.getElementById('panel').scrollTop=0;body.classList.add('open');try{history.replaceState(null,'','#cs-'+id)}catch(e){}}
+function closeP(){body.classList.remove('open');try{history.replaceState(null,'',location.pathname)}catch(e){}}
 document.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){openP(o.dataset.open)}});
 document.getElementById('close').onclick=closeP;document.getElementById('scrim').onclick=closeP;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeP()});
-if(location.hash.startsWith('#cs-'))openP(location.hash.slice(4));
+try{if(location.hash.startsWith('#cs-'))openP(location.hash.slice(4))}catch(e){}
 
 // reveal + count-up
 const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)return;en.target.classList.add('in');
