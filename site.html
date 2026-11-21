@@ -156,6 +156,10 @@ footer a:hover{color:var(--ink)}
   .nav .links a.hide-m{display:none}
 }
 @media (max-width:560px){.nav .links{gap:16px}.nav .links a:not(.btn){display:none}.hero{padding-top:64px}.stat b{font-size:34px}}
+
+.embed .nav{position:relative}
+.embed .lb,.embed .panel,.embed .scrim{position:absolute}
+.embed body{position:relative}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -432,6 +436,28 @@ const io=new IntersectionObserver(es=>es.forEach(en=>{if(!en.isIntersecting)retu
   const step=ts=>{t0=t0||ts;const k=Math.min(1,(ts-t0)/1400),v=Math.round(to*(1-Math.pow(1-k,3)));c.innerHTML=pre+v;if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)});
  io.unobserve(en.target)}),{threshold:.18});
 document.querySelectorAll('.rv').forEach((el,i)=>{if(el.classList.contains('tile'))el.style.transitionDelay=(i%5)*80+'ms';io.observe(el)});
+
+
+// Embedded mode: when the page runs inside a tall iframe (the Canva-hosted domain), the outer page scrolls,
+// so "fixed" overlays would sit in the middle of the whole document. Track which part is on screen and place overlays there.
+(function(){
+ let inFrame=false;try{inFrame=window.self!==window.top}catch(e){inFrame=true}
+ if(!inFrame)return;
+ document.documentElement.classList.add('embed');
+ const STEP=40,vis=new Set();let box=null,io2=null;
+ window.__view={top:0,h:Math.min(innerHeight,900)};
+ function update(){if(!vis.size)return;const a=[...vis];const t=Math.min(...a)*STEP,bt=(Math.max(...a)+1)*STEP;
+  window.__view={top:t,h:Math.max(200,bt-t)};place();}
+ function build(){if(io2)io2.disconnect();if(box)box.remove();vis.clear();
+  const H=document.documentElement.scrollHeight;box=document.createElement('div');box.style.cssText='position:absolute;left:0;top:0;width:1px;height:'+H+'px;pointer-events:none;visibility:hidden';
+  io2=new IntersectionObserver(es=>{es.forEach(e=>{const i=+e.target.dataset.i;if(e.intersectionRatio>=0.99)vis.add(i);else vis.delete(i)});update()},{threshold:[0,1]});
+  for(let i=0;i*STEP<H;i++){const d=document.createElement('div');d.dataset.i=i;d.style.cssText='position:absolute;left:0;width:1px;height:'+STEP+'px;top:'+(i*STEP)+'px';box.appendChild(d);io2.observe(d)}
+  document.body.appendChild(box);}
+ window.place=function(){const v=window.__view;['lb','panel','scrim'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.style.top=v.top+'px';el.style.height=v.h+'px';el.style.bottom='auto'})};
+ window.addEventListener('load',()=>setTimeout(build,300));setTimeout(build,1200);
+ let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,300)});
+ document.addEventListener('click',e=>{if(e.target.closest('.pill'))setTimeout(build,100)});
+})();
 
 // intro video lightbox: joins the four parts, plays with sound
 const lb=document.getElementById('lb'),v=document.getElementById('intro'),msg=document.getElementById('lbmsg');let loaded=false;
